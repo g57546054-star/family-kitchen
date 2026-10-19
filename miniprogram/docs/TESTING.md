@@ -2,7 +2,17 @@
 
 本文件区分 Node/浏览器验证与微信官方运行时验证。
 
-## 本次实际结果（2026-10-19）
+## 阶段 2A 修复回归（2026-10-19）
+
+- 备份预览标题/确认文案由控制器提供，WXML 不再包含容易被格式化截断的长字符串三元表达式。新增模板表达式解析检查；回归样例确认会拒绝原先的跨行字符串。
+- 用列表实际生成的编码参数测试内置、私人、网页迁入三类菜谱的“列表 → 详情 → 编辑”跳转；已解码参数同样可用，缺失/错误编码显示可恢复错误，打开页面不写本地数据。
+- `npm test --prefix miniprogram`：**41 项通过，0 失败，0 跳过**，包含原有34项和新增7项回归。
+- `npm run test:layout --prefix miniprogram`：**18 组通过**，覆盖每周点菜/采购统计栏在 320、375、414px 宽度及默认/140%/180% 文字大小下的完整文字和无溢出。以原版本源文件作负向对照，在 320px、180% 文字时能复现统计断行失败。
+- 布局检查读取实际 WXML/WXSS，采用原生标签/rpx 的浏览器适配和 TDesign 小按钮尺寸模型；**不是微信官方视图层或真机测试**。
+- 原网页 `npm run build` 与全部 **6 项 Playwright 测试**再次通过。PR CI 同时运行原生、布局和原网页检查。
+- 菜谱数据、采购计算函数、数据版本、存储键、迁移和备份写入逻辑均不改动，也不接入 CloudBase。
+
+## 初版实际结果（2026-10-19）
 
 - Node.js `v24.19.0`，TDesign MiniProgram 锁定 `1.17.0`；小程序依赖已用 `npm ci` 成功重装。
 - `npm run check --prefix miniprogram`：通过，6 页、8 个 TDesign 组件资源、60 个页面事件绑定；官方编译明确标记 `NOT_RUN`。
@@ -19,6 +29,7 @@
 ```bash
 npm run check --prefix miniprogram
 npm test --prefix miniprogram
+PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:layout --prefix miniprogram
 npm run build
 PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm test
 ```

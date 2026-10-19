@@ -11,12 +11,25 @@
 }
 .week-status {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
   align-items: center;
   gap: 12rpx;
   margin: 16rpx 0 24rpx;
 }
-.week-status > .caption {
-  flex: 1;
+.week-count {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.week-status-actions {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.week-status-actions > t-button {
+  flex-shrink: 0;
 }
 .day-card {
   margin-bottom: 28rpx;

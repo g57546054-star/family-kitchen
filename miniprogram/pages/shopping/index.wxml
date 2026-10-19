@@ -22,9 +22,9 @@
   <view wx:if="{{error}}" class="warning">{{error}}</view>
   <block wx:elif="{{total}}">
     <view class="shopping-progress"
-      ><text
-        >已备齐 <text class="progress-number">{{completed}}</text> / {{total}}
-        种</text
+      ><view class="shopping-count"
+        ><text>已备齐</text><text class="progress-number">{{completed}}</text
+        ><text>/ {{total}} 种</text></view
       ><t-button
         size="small"
         variant="text"

@@ -1,5 +1,6 @@
 const core = require("../../utils/core");
 const ui = require("../../utils/page");
+const { decodeRecipeId } = require("../../utils/routes");
 const BASE_UNITS = [
   "克",
   "千克",
@@ -37,13 +38,14 @@ Page({
     copying: false,
     ready: false,
   },
-  onLoad(options) {
+  onLoad(options = {}) {
     ui.attempt(() => {
-      if (options.id) {
+      if (options.id !== undefined) {
+        const id = decodeRecipeId(options.id);
         const recipe = ui
           .repository()
           .load()
-          .recipes.find((r) => r.id === options.id);
+          .recipes.find((r) => r.id === id);
         core.assert(recipe, "菜谱不存在");
         this.original = core.clone(recipe);
         this.setData({

@@ -22,14 +22,17 @@
       aria-label="下一周"
   /></view>
   <view class="week-status"
-    ><text class="caption">已安排 {{count}} 道菜</text
-    ><t-button size="small" variant="text" bind:tap="current">回到本周</t-button
-    ><t-button
-      size="small"
-      theme="primary"
-      variant="outline"
-      bind:tap="shopping"
-      >查看采购</t-button
+    ><text class="caption week-count">已安排 {{count}} 道菜</text
+    ><view class="week-status-actions"
+      ><t-button size="small" variant="text" bind:tap="current"
+        >回到本周</t-button
+      ><t-button
+        size="small"
+        theme="primary"
+        variant="outline"
+        bind:tap="shopping"
+        >查看采购</t-button
+      ></view
     ></view
   >
   <view wx:if="{{error}}" class="warning">{{error}}</view>

@@ -1,5 +1,6 @@
 const core = require("../../utils/core");
 const ui = require("../../utils/page");
+const { decodeRecipeId } = require("../../utils/routes");
 Page({
   data: {
     recipe: null,
@@ -10,14 +11,20 @@ Page({
     slotIndex: 1,
     planServings: "2",
   },
-  onLoad(options) {
-    this.recipeId = options.id;
+  onLoad(options = {}) {
+    try {
+      this.recipeId = decodeRecipeId(options.id);
+    } catch (error) {
+      this.recipeId = null;
+      this.setData({ recipe: null, error: error.message });
+    }
     this.setData({ showPlan: options.plan === "1" });
   },
   onShow() {
     this.refresh();
   },
   refresh() {
+    if (!this.recipeId) return;
     try {
       const recipe = ui
         .repository()
