@@ -11,11 +11,23 @@
 }
 .shopping-progress {
   display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
   justify-content: space-between;
   align-items: center;
   padding: 25rpx 0;
   font-size: 26rpx;
   color: #81946f;
+}
+.shopping-count {
+  display: flex;
+  align-items: baseline;
+  gap: 8rpx;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.shopping-progress > t-button {
+  flex-shrink: 0;
 }
 .progress-number {
   font-size: 40rpx;

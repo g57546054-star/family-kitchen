@@ -73,6 +73,8 @@ Page({
         const result = ui.repository().previewWeb(raw);
         preview = {
           kind: "web",
+          title: "网页备份 · 合并迁移",
+          confirmText: "确认迁移并自动备份",
           recipeCount: result.recipeCount,
           mealCount: result.mealCount,
           pending: result.pending,
@@ -81,6 +83,8 @@ Page({
         const state = migration.parseNativeBackup(raw);
         preview = {
           kind: "native",
+          title: "小程序备份 · 完整恢复",
+          confirmText: "确认恢复并备份当前数据",
           recipeCount: state.recipes.length,
           mealCount: Object.values(state.plans).reduce(
             (n, meals) => n + meals.length,

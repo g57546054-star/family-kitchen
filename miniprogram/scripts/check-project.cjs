@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 const vm = require("node:vm");
 const { createRequire } = require("node:module");
 const { DOMParser } = require("@xmldom/xmldom");
+const { checkTemplateExpressions } = require("./check-expressions.cjs");
 const root = path.resolve(__dirname, "..");
 const readJSON = (file) => JSON.parse(fs.readFileSync(file, "utf8"));
 
@@ -70,6 +71,7 @@ function checkProject() {
       `Missing Page registration: ${page}`,
     );
     const template = fs.readFileSync(base + ".wxml", "utf8");
+    checkTemplateExpressions(template, `${page}.wxml`);
     assert.ok(
       !/<web-view\b/.test(template),
       "Native app must not wrap the old web page",

@@ -6,6 +6,7 @@
   "description": "家常厨房 · 微信原生小程序（阶段 2A，本地版）",
   "scripts": {
     "test": "node --test tests/*.test.cjs",
+    "test:layout": "node tests/layout.browser.cjs",
     "check": "node scripts/check-project.cjs"
   },
   "dependencies": {

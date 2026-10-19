@@ -47,17 +47,14 @@
       >预览备份</t-button
     >
     <view wx:if="{{preview}}" class="preview"
-      ><text class="section-title"
-        >{{preview.kind === 'web' ? '网页备份 · 合并迁移' : '小程序备份 ·
-        完整恢复'}}</text
+      ><text class="section-title">{{preview.title}}</text
       ><text
         >{{preview.recipeCount}} 道菜谱 · {{preview.mealCount}} 个点菜记录</text
       ><text>有 {{preview.pending}} 项食材保留原单位，待称重核对</text
       ><text class="caption"
         >预览不会写入数据。网页旧勾选保留在原备份中，新清单需重新核对。完整恢复会替换当前数据。</text
       ><t-button block theme="primary" bind:tap="importConfirmed"
-        >{{preview.kind === 'web' ? '确认迁移并自动备份' :
-        '确认恢复并备份当前数据'}}</t-button
+        >{{preview.confirmText}}</t-button
       ></view
     >
   </view>

@@ -40,11 +40,14 @@
 ```bash
 npm run check --prefix miniprogram
 npm test --prefix miniprogram
+PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:layout --prefix miniprogram
 npm run build
 PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm test
 ```
 
 最后一条是**原有网页**的 Chromium 测试；其他机器先按根 README 安装 Playwright Chromium，或指定本机 Chromium 路径。不要把网页浏览器测试当作原生小程序真机测试。
+
+`test:layout` 使用根项目的 Playwright/Chromium，读取实际统计区域 WXML/WXSS，将原生标签和 rpx 适配为浏览器 CSS 模型，检查小屏和放大文字时的断行/溢出；它不验证微信组件实际渲染。CI 会安装 Chromium 并运行此项。`check` 还会解析模板表达式，拒绝被换行截断的字符串，避免 XML 结构检查漏过此类错误。
 
 `check` 校验真实项目配置、六页四件套、TDesign 资源路径、WXML XML 结构及所有页面事件处理函数；它不是微信官方编译器。`test` 使用 Node 内置测试运行器，覆盖真实业务函数、微信存储适配器与页面控制器（模拟 `wx`/`Page`），并从**未改动的 `src/data.ts`** 编译原始函数，做菜单/采购/日期逻辑对照。CI 对 PR 运行这些检查与旧网页构建，不上传、发布或创建云环境。
 
