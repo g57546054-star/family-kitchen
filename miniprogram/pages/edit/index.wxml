@@ -1,0 +1,121 @@
+<view class="page">
+  <view wx:if="{{copying}}" class="notice"
+    >正在另存为私人菜谱，原始示例配方会保留。</view
+  >
+  <view class="card form-card">
+    <t-input
+      label="菜名"
+      value="{{name}}"
+      maxlength="60"
+      placeholder="例如：妈妈的红烧肉"
+      data-field="name"
+      bind:change="field"
+    />
+    <picker
+      range="{{categories}}"
+      value="{{categoryIndex}}"
+      bindchange="category"
+      ><view class="picker-field"
+        ><text>分类</text><text>{{categories[categoryIndex]}} ›</text></view
+      ></picker
+    >
+    <t-input
+      label="制作时间（分钟）"
+      type="number"
+      value="{{minutes}}"
+      data-field="minutes"
+      bind:change="field"
+    />
+    <t-input
+      label="基础人数"
+      type="number"
+      value="{{servings}}"
+      data-field="servings"
+      bind:change="field"
+    />
+  </view>
+  <view class="heading"
+    ><text class="section-title">食材与用量</text
+    ><text class="caption">请按可食部分填写</text></view
+  >
+  <view class="notice"
+    >旧数据的个、颗、毫升等不是克。切换为克重会清空旧数量，请称重后填写；只有千克和克可直接换算。</view
+  >
+  <view wx:for="{{ingredients}}" wx:key="rowKey" class="card ingredient-form">
+    <view class="ingredient-heading"
+      ><text class="caption">食材 {{index + 1}}</text
+      ><t-button
+        size="small"
+        variant="text"
+        theme="danger"
+        disabled="{{ingredients.length === 1}}"
+        data-index="{{index}}"
+        bind:tap="removeIngredient"
+        >移除</t-button
+      ></view
+    >
+    <t-input
+      label="名称"
+      value="{{item.name}}"
+      maxlength="40"
+      data-index="{{index}}"
+      data-field="name"
+      bind:change="ingredient"
+    />
+    <t-input
+      label="用量"
+      type="digit"
+      value="{{item.amount}}"
+      data-index="{{index}}"
+      data-field="amount"
+      bind:change="ingredient"
+    />
+    <picker
+      range="{{item.unitOptions}}"
+      data-index="{{index}}"
+      bindchange="unit"
+      ><view class="picker-field"
+        ><text>单位</text><text>{{item.unit}} ›</text></view
+      ></picker
+    >
+    <view wx:if="{{item.sourceMeasure}}" class="original-measure"
+      >原记录：{{item.sourceMeasure.amount}} {{item.sourceMeasure.unit}}</view
+    >
+    <view wx:if="{{item.needsReview}}" class="original-measure"
+      >按原单位保留，尚待称重核对。</view
+    >
+    <t-checkbox
+      wx:if="{{item.reviewRequired}}"
+      checked="{{item.weightConfirmed}}"
+      label="我已称重并核对该食材的重量"
+      data-index="{{index}}"
+      bind:change="confirmWeight"
+    />
+  </view>
+  <t-button
+    theme="primary"
+    variant="outline"
+    block
+    icon="add"
+    bind:tap="addIngredient"
+    >添加食材</t-button
+  >
+  <view class="card padded steps-form"
+    ><text class="section-title">详细做法</text
+    ><text class="caption">每行一个步骤，最多40步，每步1000字。</text
+    ><t-textarea
+      value="{{stepsText}}"
+      maxlength="40000"
+      placeholder="食材洗净切好…&#10;热锅下油…"
+      data-field="stepsText"
+      bind:change="field"
+      autosize
+  /></view>
+  <view wx:if="{{error}}" class="warning">{{error}}</view>
+  <t-button theme="primary" block disabled="{{!ready}}" bind:tap="save"
+    >保存私人菜谱</t-button
+  >
+  <text class="page-note"
+    >保存后会重新计算菜单用量，并取消采购勾选。数据仅存本机。</text
+  >
+</view>

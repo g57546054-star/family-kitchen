@@ -1,0 +1,26 @@
+.form-card {
+  overflow: hidden;
+}
+.ingredient-form {
+  overflow: hidden;
+  margin-bottom: 24rpx;
+}
+.ingredient-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12rpx 28rpx 0;
+}
+.original-measure {
+  padding: 18rpx 28rpx;
+  font-size: 24rpx;
+  color: #a67b40;
+  background: #fcf6e9;
+}
+.steps-form {
+  margin-top: 30rpx;
+}
+.steps-form .caption {
+  display: block;
+  margin: 14rpx 0 20rpx;
+}

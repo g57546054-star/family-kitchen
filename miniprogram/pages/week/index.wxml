@@ -1,0 +1,145 @@
+<view class="page">
+  <view class="heading"
+    ><view
+      ><text class="title">每周点菜</text
+      ><text class="caption">提前安排，把好好吃饭变得简单。</text></view
+    ><t-icon name="calendar" size="48rpx" color="#7f956a"
+  /></view>
+  <view class="week-navigation"
+    ><t-button
+      size="small"
+      variant="text"
+      icon="chevron-left"
+      bind:tap="previous"
+      disabled="{{offset === -520}}"
+      aria-label="上一周" /><text>{{label}}</text
+    ><t-button
+      size="small"
+      variant="text"
+      icon="chevron-right"
+      bind:tap="next"
+      disabled="{{offset === 520}}"
+      aria-label="下一周"
+  /></view>
+  <view class="week-status"
+    ><text class="caption">已安排 {{count}} 道菜</text
+    ><t-button size="small" variant="text" bind:tap="current">回到本周</t-button
+    ><t-button
+      size="small"
+      theme="primary"
+      variant="outline"
+      bind:tap="shopping"
+      >查看采购</t-button
+    ></view
+  >
+  <view wx:if="{{error}}" class="warning">{{error}}</view>
+  <view wx:for="{{days}}" wx:for-item="day" wx:key="date" class="card day-card">
+    <view class="day-heading {{day.today ? 'today' : ''}}"
+      ><text>{{day.label}} · {{day.shortDate}}</text
+      ><t-tag wx:if="{{day.today}}" theme="success" size="small" variant="light"
+        >今天</t-tag
+      ></view
+    >
+    <view
+      wx:for="{{day.slots}}"
+      wx:for-item="mealSlot"
+      wx:key="slot"
+      class="meal-slot"
+    >
+      <view class="meal-heading"
+        ><text>{{mealSlot.slot}}</text
+        ><t-button
+          size="small"
+          variant="text"
+          theme="primary"
+          icon="add"
+          data-date="{{day.date}}"
+          data-slot="{{mealSlot.slot}}"
+          bind:tap="add"
+          >加道菜</t-button
+        ></view
+      >
+      <text wx:if="{{!mealSlot.meals.length}}" class="caption"
+        >还没想好吃什么，选一道家常味吧。</text
+      >
+      <view
+        wx:for="{{mealSlot.meals}}"
+        wx:for-item="meal"
+        wx:key="recipeId"
+        class="planned-dish"
+      >
+        <view class="planned-heading"
+          ><text data-id="{{meal.recipeId}}" bindtap="open"
+            >{{meal.name}} ›</text
+          ><t-button
+            size="small"
+            theme="danger"
+            variant="text"
+            data-id="{{meal.recipeId}}"
+            data-date="{{day.date}}"
+            data-slot="{{mealSlot.slot}}"
+            bind:tap="remove"
+            >移除</t-button
+          ></view
+        >
+        <view class="serving-control"
+          ><t-button
+            size="small"
+            variant="outline"
+            data-id="{{meal.recipeId}}"
+            data-date="{{day.date}}"
+            data-slot="{{mealSlot.slot}}"
+            data-servings="{{meal.servings}}"
+            data-delta="-1"
+            disabled="{{meal.servings === 1}}"
+            bind:tap="adjust"
+            >−</t-button
+          ><text>{{meal.servings}} 人份</text
+          ><t-button
+            size="small"
+            variant="outline"
+            data-id="{{meal.recipeId}}"
+            data-date="{{day.date}}"
+            data-slot="{{mealSlot.slot}}"
+            data-servings="{{meal.servings}}"
+            data-delta="1"
+            disabled="{{meal.servings === 100}}"
+            bind:tap="adjust"
+            >+</t-button
+          ></view
+        >
+      </view>
+    </view>
+  </view>
+  <text class="page-note"
+    >调整菜单后，本周采购勾选会重置，以便重新核对数量。</text
+  >
+</view>
+<t-popup
+  visible="{{showPicker}}"
+  placement="bottom"
+  bind:visible-change="pickerVisible"
+>
+  <view class="sheet"
+    ><view class="heading"
+      ><text class="section-title">{{chosenDate}} · {{chosenSlot}}</text
+      ><t-button variant="text" size="small" bind:tap="closePicker"
+        >取消</t-button
+      ></view
+    ><picker
+      range="{{recipes}}"
+      range-key="name"
+      value="{{recipeIndex}}"
+      bindchange="chooseRecipe"
+      ><view class="picker-field"
+        ><text>选择菜谱</text><text>{{recipes[recipeIndex].name}} ›</text></view
+      ></picker
+    ><t-input
+      label="用餐人数"
+      type="number"
+      value="{{servings}}"
+      bind:change="servings"
+    /><text class="caption">相同餐次重复选择同一道菜，会合并用餐人数。</text
+    ><t-button block theme="primary" bind:tap="save">确认点菜</t-button></view
+  >
+</t-popup>

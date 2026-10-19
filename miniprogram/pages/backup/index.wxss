@@ -1,0 +1,54 @@
+.description {
+  display: block;
+  margin: 20rpx 0 28rpx;
+  color: #859577;
+  font-size: 25rpx;
+  line-height: 1.9;
+}
+.backup-actions {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  justify-content: space-between;
+  margin: 16rpx 0;
+  flex-wrap: wrap;
+}
+.instruction {
+  margin: 25rpx 0;
+  color: #7f9171;
+  font-size: 25rpx;
+  line-height: 1.9;
+}
+.instruction > text {
+  display: block;
+  margin-bottom: 16rpx;
+}
+.filename {
+  display: block;
+  margin: 20rpx 0;
+  color: #6a8658;
+  font-size: 24rpx;
+  overflow-wrap: break-word;
+}
+.preview {
+  padding: 26rpx;
+  margin-top: 28rpx;
+  background: #f0f5e6;
+  border-radius: 14rpx;
+}
+.preview > text {
+  display: block;
+  margin-bottom: 20rpx;
+  font-size: 25rpx;
+  line-height: 1.8;
+}
+.backup-row {
+  padding: 28rpx 0;
+  border-bottom: 1rpx solid #e7edde;
+  font-size: 26rpx;
+  overflow-wrap: break-word;
+}
+.backup-row > .caption {
+  margin-top: 10rpx;
+  font-size: 21rpx;
+}
