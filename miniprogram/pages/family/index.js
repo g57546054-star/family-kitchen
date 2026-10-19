@@ -167,7 +167,7 @@ Page({
     );
   },
   async refreshCloud() {
-    await provider().pull(true);
+    await provider().pull();
     this.refresh();
   },
   sync() {

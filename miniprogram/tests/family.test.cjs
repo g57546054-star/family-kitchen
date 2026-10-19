@@ -364,3 +364,41 @@ test("an open cloud editor cannot write its form into local data after membershi
   assert.match(loaded.page.data.error, /模式已变化/);
   assert.equal(JSON.stringify(c.local.load()), before);
 });
+test("shared commands stay busy until their post-write refresh completes, preventing a second submit in that interval", async () => {
+  const f = fixture();
+  await f.family();
+  const local = createRepository(memoryStorage());
+  let holdPull = false,
+    release;
+  const family = createFamilyProvider({
+    localRepository: local,
+    transport: async (request) => {
+      if (holdPull && request.action === "pull")
+        await new Promise((resolve) => {
+          release = resolve;
+        });
+      return f.service.handle(request, { OPENID: "alice", APPID });
+    },
+  });
+  await family.connect();
+  await family.pull(true);
+  family.activate();
+  holdPull = true;
+  const payload = {
+    date: "2026-10-19",
+    slot: "晚餐",
+    recipeId: family.load().recipes[0].id,
+    servings: 2,
+  };
+  const saving = family.command("plan.add", payload);
+  for (let i = 0; i < 30 && !release; i++)
+    await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(typeof release, "function");
+  assert.equal(family.status().busy, true);
+  await assert.rejects(family.command("plan.add", payload), /等待/);
+  holdPull = false;
+  release();
+  await saving;
+  assert.equal(family.status().busy, false);
+  assert.equal(family.load().plans["2026-10-19:晚餐"][0].servings, 2);
+});

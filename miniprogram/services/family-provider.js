@@ -190,7 +190,20 @@ function createFamilyProvider({ localRepository, transport, storage = null }) {
       throw e;
     }
   }
-  async function manage(action, payload = {}) {
+  async function refreshSaved(result) {
+    try {
+      await pull(true);
+      return result;
+    } catch (_) {
+      setError(
+        new Error(
+          "操作已保存到家庭，但刷新失败。请手动刷新，不要重复提交相同操作。",
+        ),
+      );
+      return { ...result, refreshPending: true };
+    }
+  }
+  async function manage(action, payload = {}, syncAfter = false) {
     core.assert(session, "请先点击微信身份登录");
     core.assert(!busy && !pending, "请等待当前操作完成，或先重试未确认的操作");
     const next = { action, payload: core.clone(payload), id: requestId() };
@@ -199,7 +212,8 @@ function createFamilyProvider({ localRepository, transport, storage = null }) {
     busy = true;
     notify();
     try {
-      return await send(action, pending.payload, pending.id);
+      const result = await send(action, pending.payload, pending.id);
+      return syncAfter ? await refreshSaved(result) : result;
     } finally {
       busy = false;
       notify();
@@ -208,21 +222,11 @@ function createFamilyProvider({ localRepository, transport, storage = null }) {
   async function command(action, payload) {
     core.assert(mode === "cloud" && snapshot, "请先切换到家庭共享模式");
     try {
-      const result = await manage(action, {
-        ...payload,
-        householdId: snapshot.household.id,
-      });
-      try {
-        await pull(true);
-      } catch (e) {
-        setError(
-          new Error(
-            "操作已保存到家庭，但刷新失败。请手动刷新，不要重复提交相同操作。",
-          ),
-        );
-        return { ...result, refreshPending: true };
-      }
-      return result;
+      return await manage(
+        action,
+        { ...payload, householdId: snapshot.household.id },
+        true,
+      );
     } catch (e) {
       if (e.definitive) {
         try {
@@ -257,8 +261,7 @@ function createFamilyProvider({ localRepository, transport, storage = null }) {
     notify();
     try {
       const result = await send(pending.action, pending.payload, pending.id);
-      if (session.householdId) await pull(true);
-      return result;
+      return session.householdId ? await refreshSaved(result) : result;
     } finally {
       busy = false;
       notify();
