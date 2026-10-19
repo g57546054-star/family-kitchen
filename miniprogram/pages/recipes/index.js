@@ -11,7 +11,15 @@ Page({
     total: 0,
     error: "",
   },
+  onHide() {
+    ui.detachSync(this);
+  },
+  onUnload() {
+    ui.detachSync(this);
+  },
   onShow() {
+    ui.detachSync(this);
+    ui.attachSync(this);
     this.refresh();
   },
   refresh() {
@@ -65,11 +73,22 @@ Page({
     });
   },
   favorite(event) {
-    ui.attempt(() => {
-      ui.repository().transact((state) =>
-        core.toggleFavorite(state, event.currentTarget.dataset.id),
+    return ui.attempt(() => {
+      const id = event.currentTarget.dataset.id;
+      const recipe = ui
+        .repository()
+        .load()
+        .recipes.find((r) => r.id === id);
+      return ui.command(
+        "recipe.favorite",
+        {
+          recipeId: id,
+          favorite: !recipe.favorite,
+          expectedVersion: ui.version(),
+        },
+        (state) => core.toggleFavorite(state, id),
+        () => this.refresh(),
       );
-      this.refresh();
     });
   },
   backup() {

@@ -1,6 +1,23 @@
-# 阶段 2A 验证记录
+# 微信小程序验证记录
 
 本文件区分 Node/浏览器验证与微信官方运行时验证。
+
+## 阶段2B本地结果（2026-10-19）
+
+- 运行环境：Node.js v24.19.0，TDesign 1.17.0；新增云函数 SDK 锁定 `wx-server-sdk@4.0.2`，使用 `npm ci --prefix cloudfunctions/family --ignore-scripts` 安装。只从公开 npm 获取依赖，没有初始化/调用真实微信或腾讯云。
+- `npm run check --prefix miniprogram`：7页、8个TDesign组件资源、78个页面事件绑定通过；模板表达式也解析通过，官方编译仍标为 `NOT_RUN`。
+- `npm test --prefix miniprogram`：**52项通过，0失败、0跳过**。包含原有41项以及新增11项：默认不连接云端、明确选择后的传输、备份失败阻断切换、共享写入口保护、真实页面控制器到服务端命令链路、两用户同步、请求重启重试、撤销成员清除缓存、迁移双备份、写成功但刷新失败、服务端不确定错误保留幂等请求、打开的编辑表单模式变化保护。
+- `npm test --prefix cloudfunctions/family`：**18项通过，0失败、0跳过**。覆盖入口可信 OPENID/APPID、所有家庭操作的非成员/跨家庭拒绝、管理员权限、成员移除、过期/撤销/已用邀请码、并发消费邀请、限流、错误脱敏、输入与单位校验、重复提交、退出重试、并发点菜/人数、不同食材勾选合并与同项冲突、旧菜单勾选拒绝、并发编辑冲突、一次性迁移与拒绝覆盖、一致快照版本、实际部署逻辑副本的字节对照及文档SDK适配层。
+- 并发测试使用有快照隔离、读写版本校验、原子提交和重试的本地乐观MVCC存储，确实观察到冲突后重试；不是将所有回调顺序串行执行的假并发测试。**不能证明真实云数据库的锁、隔离/配额、延迟或SDK线上兼容性**。
+- `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:layout --prefix miniprogram`：**18组通过**，既有周菜单/采购统计栏在320/375/414px与100%/140%/180%字体下通过。仅Chromium CSS模型，不包括新家庭页的微信渲染。
+- 原网页 `npm run build` 与全部 **6项Playwright测试**通过。`src/`、`public/`、原网页依赖/锁文件、网页测试和Pages发布工作流保留不变；根README仅追加原生小程序入口说明。
+- PR CI增加云函数锁定安装及本地测试，没有部署任务。未连接所提供的CloudBase环境、创建集合、设置实际权限、部署函数、购买套餐、调用付费资源或提交密钥。
+
+### 本阶段明确未验证
+
+已填写用户提供的公开AppID与环境ID，但没有微信开发者工具/官方编译器、微信真机或云端访问操作。因此：**官方导入、构建npm、WXML/WXSS编译、真机TDesign与文件发送、CloudBase实际关联/集合权限、真实文档事务限额与延迟、真实双微信账号同步均未执行**。本地有两个模拟可信身份的端到端命令测试，不应称为“真实多人同步已通过”。
+
+后续由用户按 [CloudBase手动配置与验收](CLOUDBASE.md) 操作；那里包含免费体验配额和约6个月到期的风险。以下2A记录仅为历史结果，其中游客AppID/云提供者禁用等描述已由2B替代。
 
 ## 阶段 2A 修复回归（2026-10-19）
 
@@ -29,6 +46,7 @@
 ```bash
 npm run check --prefix miniprogram
 npm test --prefix miniprogram
+npm test --prefix cloudfunctions/family
 PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:layout --prefix miniprogram
 npm run build
 PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm test

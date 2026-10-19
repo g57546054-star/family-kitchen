@@ -22,10 +22,15 @@ jobs:
           cache-dependency-path: |
             package-lock.json
             miniprogram/package-lock.json
+            cloudfunctions/family/package-lock.json
       - name: Install web dependencies for parity checks
         run: npm ci --no-audit --no-fund
       - name: Install MiniProgram dependencies
         run: npm ci --prefix miniprogram --no-audit --no-fund
+      - name: Install locked cloud function dependencies (no deployment)
+        run: npm ci --prefix cloudfunctions/family --ignore-scripts --no-audit --no-fund
+      - name: Test cloud identity, permissions, transactions and SDK adapter locally
+        run: npm test --prefix cloudfunctions/family
       - name: Validate native resources and event bindings
         run: npm run check --prefix miniprogram
       - name: Test native logic, migration, storage and page controllers

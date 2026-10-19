@@ -14,7 +14,15 @@ Page({
     servings: "2",
     error: "",
   },
+  onHide() {
+    ui.detachSync(this);
+  },
+  onUnload() {
+    ui.detachSync(this);
+  },
   onShow() {
+    ui.detachSync(this);
+    ui.attachSync(this);
     const selected = getApp().selectedWeekDate;
     if (selected) {
       const diff =
@@ -105,40 +113,60 @@ Page({
     this.setData({ servings: ui.value(event) });
   },
   save() {
-    ui.attempt(() => {
+    return ui.attempt(() => {
       const recipe = this.data.recipes[this.data.recipeIndex];
-      ui.repository().transact((s) =>
-        core.addMeal(
-          s,
-          this.data.chosenDate,
-          this.data.chosenSlot,
-          recipe.id,
-          Number(this.data.servings),
-        ),
+      const payload = {
+        date: this.data.chosenDate,
+        slot: this.data.chosenSlot,
+        recipeId: recipe.id,
+        servings: Number(this.data.servings),
+      };
+      return ui.command(
+        "plan.add",
+        payload,
+        (s) =>
+          core.addMeal(
+            s,
+            payload.date,
+            payload.slot,
+            payload.recipeId,
+            payload.servings,
+          ),
+        () => {
+          this.setData({ showPicker: false });
+          this.refresh();
+          ui.toast("点菜成功，采购清单已更新");
+        },
       );
-      this.setData({ showPicker: false });
-      this.refresh();
-      ui.toast("点菜成功，采购清单已更新");
     });
   },
   adjust(event) {
-    ui.attempt(() => {
+    return ui.attempt(() => {
       const d = event.currentTarget.dataset;
       const servings = Number(d.servings) + Number(d.delta);
       core.assert(servings >= 1, "至少1人份，需要删除请点击移除");
-      ui.repository().transact((s) =>
-        core.changeMeal(s, d.date, d.slot, d.id, servings),
+      return ui.command(
+        "plan.adjust",
+        { date: d.date, slot: d.slot, recipeId: d.id, delta: Number(d.delta) },
+        (s) => core.changeMeal(s, d.date, d.slot, d.id, servings),
+        () => this.refresh(),
       );
-      this.refresh();
     });
   },
   remove(event) {
     const d = event.currentTarget.dataset;
     ui.confirm("移除这道菜", "采购清单将重新计算，该周采购勾选会重置。", () => {
-      ui.repository().transact((s) =>
-        core.changeMeal(s, d.date, d.slot, d.id, 0),
+      return ui.command(
+        "plan.remove",
+        {
+          date: d.date,
+          slot: d.slot,
+          recipeId: d.id,
+          expectedVersion: ui.version(),
+        },
+        (s) => core.changeMeal(s, d.date, d.slot, d.id, 0),
+        () => this.refresh(),
       );
-      this.refresh();
     });
   },
   open(event) {

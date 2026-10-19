@@ -1,0 +1,7 @@
+.card t-button { margin-top: 24rpx; }
+.member, .invite-row { display: flex; align-items: center; justify-content: space-between; gap: 20rpx; padding: 20rpx 0; border-bottom: 1rpx solid #edf0e6; }
+.member-name { min-width: 0; overflow-wrap: anywhere; }
+.member t-button, .invite-row t-button { flex-shrink: 0; margin: 0; }
+.invite { margin: 28rpx 0; padding: 24rpx; background: #eef4e6; border-radius: 16rpx; }
+.invite-code { display: block; font-size: 40rpx; letter-spacing: 4rpx; color: #315c45; overflow-wrap: anywhere; }
+.invite-row { flex-wrap: wrap; }

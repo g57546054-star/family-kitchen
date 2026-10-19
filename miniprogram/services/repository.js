@@ -124,6 +124,9 @@ function createRepository(storage) {
   }
   return {
     load,
+    preserve,
+    backup: (kind, filename) =>
+      preserve(kind, JSON.stringify(migration.nativeBackup(load())), filename),
     save,
     transact,
     importWeb,

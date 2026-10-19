@@ -61,6 +61,10 @@ Page({
           copying: recipe.origin === "builtin",
         });
       }
+      this.editorMode = getApp().familyProvider
+        ? getApp().familyProvider.status().mode
+        : "local";
+      this.originalVersion = ui.version();
       this.setData({ ready: true });
     });
   },
@@ -130,6 +134,13 @@ Page({
   save() {
     try {
       core.assert(this.data.ready, "菜谱尚未加载，请返回重试");
+      const currentMode = getApp().familyProvider
+        ? getApp().familyProvider.status().mode
+        : "local";
+      core.assert(
+        currentMode === this.editorMode,
+        "存储模式已变化，请保留输入后返回重新打开，避免写入另一份数据",
+      );
       this.data.ingredients.forEach((i) =>
         core.assert(
           !i.reviewRequired || i.weightConfirmed,
@@ -160,12 +171,28 @@ Page({
           .map((s) => s.trim())
           .filter(Boolean),
       };
-      ui.repository().transact((s) => core.saveRecipe(s, recipe));
-      this.saved = true;
-      ui.toast("私人菜谱已保存");
-      wx.redirectTo({
-        url: `/pages/detail/index?id=${encodeURIComponent(recipe.id)}`,
-      });
+      const saved = () => {
+        this.saved = true;
+        ui.toast("私人菜谱已保存");
+        wx.redirectTo({
+          url: `/pages/detail/index?id=${encodeURIComponent(recipe.id)}`,
+        });
+      };
+      const result = ui.command(
+        "recipe.save",
+        { recipe, expectedVersion: this.originalVersion },
+        (s) => core.saveRecipe(s, recipe),
+        saved,
+      );
+      if (result && result.catch)
+        return result.catch((error) =>
+          this.setData({
+            error:
+              error.code === "CONFLICT"
+                ? "家人已修改数据，表单仍保留。请先复制修改内容，再返回重新打开菜谱后编辑。"
+                : error.message,
+          }),
+        );
     } catch (error) {
       this.setData({ error: error.message || "保存失败，原数据未更改" });
     }

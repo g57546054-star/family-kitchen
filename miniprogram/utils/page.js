@@ -11,7 +11,10 @@ function report(error) {
 }
 function attempt(callback) {
   try {
-    return callback();
+    const result = callback();
+    return result && typeof result.then === "function"
+      ? result.catch(report)
+      : result;
   } catch (error) {
     report(error);
     return undefined;
@@ -43,14 +46,63 @@ function recipeView(recipe) {
   };
 }
 function dateViews(offset) {
-  return core
-    .weekDates(offset)
-    .map((date, i) => ({
-      value: core.localDate(date),
-      label: `${core.DAYS[i]} ${date.getMonth() + 1}/${date.getDate()}`,
-    }));
+  return core.weekDates(offset).map((date, i) => ({
+    value: core.localDate(date),
+    label: `${core.DAYS[i]} ${date.getMonth() + 1}/${date.getDate()}`,
+  }));
+}
+function command(action, payload, localOperation, after = () => {}) {
+  const provider = getApp().familyProvider;
+  if (!provider || provider.status().mode === "local") {
+    const result = repository().transact(localOperation);
+    after(result);
+    return result;
+  }
+  return provider.command(action, payload).then((result) => {
+    after(result);
+    return result;
+  });
+}
+function version() {
+  const p = getApp().familyProvider;
+  return p && p.status().mode === "cloud" ? p.expected() : 0;
+}
+function attachSync(page) {
+  const provider = getApp().familyProvider;
+  if (!provider) return;
+  const update = () => {
+    const status = provider.status();
+    page.setData({
+      syncText:
+        status.mode === "cloud"
+          ? status.error ||
+            (status.busy
+              ? "正在保存到家庭…"
+              : `家庭共享 · ${status.lastSync || "待刷新"}`)
+          : status.error || "本地模式 · 数据仅在此设备",
+    });
+    if (!status.busy && page.refresh) page.refresh();
+  };
+  page.detachSync = provider.subscribe(update);
+  update();
+  const poll = () => {
+    if (provider.status().mode === "cloud" && !provider.status().busy)
+      provider.pull().catch(() => {});
+  };
+  poll();
+  page.syncTimer = setInterval(poll, 20000);
+}
+function detachSync(page) {
+  if (page.detachSync) page.detachSync();
+  page.detachSync = null;
+  if (page.syncTimer) clearInterval(page.syncTimer);
+  page.syncTimer = null;
 }
 module.exports = {
+  command,
+  version,
+  attachSync,
+  detachSync,
   repository,
   report,
   attempt,

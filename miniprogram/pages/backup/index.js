@@ -20,6 +20,10 @@ Page({
       const backups = repository.listBackups();
       this.setData({ backups });
       const state = repository.load();
+      const family = getApp().familyProvider;
+      this.setData({
+        cloudEnabled: !!family && family.status().mode === "cloud",
+      });
       this.setData({
         stats: `${state.recipes.length} 道菜谱 · ${state.imports.length} 次网页迁移`,
         error: "",

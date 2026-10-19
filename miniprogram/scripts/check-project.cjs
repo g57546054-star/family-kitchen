@@ -12,6 +12,8 @@ function checkProject() {
   const config = readJSON(path.join(root, "../project.config.json"));
   assert.equal(config.miniprogramRoot, "miniprogram/");
   assert.equal(config.compileType, "miniprogram");
+  assert.equal(config.cloudfunctionRoot, "cloudfunctions/");
+  assert.equal(config.appid, require("../services/cloud-config").appid);
   assert.ok(
     config.appid === "touristappid" || /^wx[0-9a-f]{16}$/.test(config.appid),
     "Use the guest placeholder or your legitimate public AppID, never a secret",
@@ -128,9 +130,14 @@ function checkProject() {
       const source = fs.readFileSync(path.join(root, folder, name), "utf8");
       new vm.Script(source);
       assert.ok(
-        !/wx\.(?:cloud|request|login)\s*[.(]/.test(source),
-        "Cloud/network/login must remain disabled",
+        !/\b(?:wx|api)\.(?:request|login)\s*\(/.test(source),
+        "Use the opt-in cloud function transport rather than direct network/login APIs",
       );
+      assert.ok(
+        !/\b(?:wx|api)\.cloud\b/.test(source) || (folder === "services" && name === "family-provider.js"),
+        "Only family-provider.js may access the cloud transport",
+      );
+      assert.ok(!/\.cloud\.database\s*\(/.test(source), "Client database access is forbidden");
     }
   }
   return {

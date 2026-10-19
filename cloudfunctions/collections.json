@@ -1,0 +1,34 @@
+{
+  "databaseType": "document",
+  "collections": [
+    "households",
+    "members",
+    "invites",
+    "recipes",
+    "plans",
+    "shopping_checks",
+    "users",
+    "operations",
+    "rate_limits"
+  ],
+  "indexes": [
+    {
+      "collections": "all",
+      "name": "_id_",
+      "fields": [{ "field": "_id", "direction": "asc" }],
+      "unique": true,
+      "builtIn": true
+    }
+  ],
+  "optionalMaintenanceIndexes": [
+    {
+      "collection": "invites",
+      "fields": [{ "field": "expiresAt", "direction": "asc" }]
+    },
+    {
+      "collection": "rate_limits",
+      "fields": [{ "field": "expiresAt", "direction": "asc" }]
+    }
+  ],
+  "note": "All application reads use deterministic document IDs inside transactions; no compound, SQL, query, or TTL indexes required. Do not automatically delete operations: permanent request tombstones prevent replay after cleanup. No automatic resource creation."
+}
