@@ -1,0 +1,98 @@
+<view class="page">
+  <view class="hero">
+    <text class="eyebrow">FAMILY KITCHEN · 本地厨房</text>
+    <text class="hero-title">把日子过成 喜欢的味道。</text>
+    <text class="muted">一蔬一饭，认真对待每一餐。</text>
+    <view class="hero-leaf"
+      ><t-icon name="forest" size="84rpx" color="#819867"
+    /></view>
+  </view>
+  <view wx:if="{{error}}" class="warning"
+    ><text>{{error}}</text
+    ><t-button theme="primary" variant="outline" bind:tap="backup"
+      >前往备份与恢复</t-button
+    ></view
+  >
+  <block wx:else>
+    <view class="heading"
+      ><view
+        ><text class="title">我的菜谱</text
+        ><text class="caption"
+          >共 {{total}} 道，示例配方可另存为私房菜</text
+        ></view
+      ><t-button theme="primary" size="small" icon="add" bind:tap="add"
+        >添加菜谱</t-button
+      ></view
+    >
+    <t-search
+      value="{{query}}"
+      placeholder="搜索菜名或食材，多个词用空格分隔"
+      bind:change="search"
+      bind:clear="clearSearch"
+    />
+    <scroll-view scroll-x class="category-scroll"
+      ><view class="categories"
+        ><view
+          wx:for="{{categories}}"
+          wx:key="*this"
+          data-category="{{item}}"
+          bindtap="category"
+          class="filter {{category === item ? 'selected' : ''}}"
+          >{{item}}</view
+        ></view
+      ></scroll-view
+    >
+    <view class="filter-row"
+      ><view
+        class="filter {{onlyFavorites ? 'selected' : ''}}"
+        bindtap="favorites"
+        ><t-icon name="heart" size="28rpx" /> 只看收藏</view
+      ><view
+        class="filter {{onlyPrivate ? 'selected' : ''}}"
+        bindtap="privateRecipes"
+        >私人菜谱</view
+      ><text class="caption">{{recipes.length}} 道</text></view
+    >
+    <view wx:for="{{recipes}}" wx:key="id" class="card recipe-card">
+      <view class="recipe-body" data-id="{{item.id}}" bindtap="open"
+        ><view class="dish-mark"><t-icon name="shop" size="42rpx" /></view
+        ><view class="recipe-copy"
+          ><text class="recipe-name">{{item.name}}</text
+          ><text class="ingredient-preview">{{item.ingredientText}}</text
+          ><view class="meta"
+            ><text>{{item.minutes}} 分钟</text
+            ><text>{{item.servings}} 人份</text
+            ><text>{{item.category}}</text></view
+          ></view
+        ><t-icon name="chevron-right" color="#8e9c80" size="32rpx"
+      /></view>
+      <view class="card-foot"
+        ><t-tag
+          size="small"
+          variant="light"
+          theme="{{item.pendingCount ? 'warning' : 'success'}}"
+          >{{item.pendingCount ? '含待核对单位' : '克重配方'}}</t-tag
+        ><text class="caption"
+          >{{item.origin === 'builtin' ? '示例配方' : item.origin === 'imported'
+          ? '网页迁入 · 私人' : '我的私房菜'}}</text
+        ><view
+          data-id="{{item.id}}"
+          bindtap="favorite"
+          class="favorite-hit"
+          aria-role="button"
+          aria-label="收藏菜谱"
+          ><t-icon
+            name="{{item.favorite ? 'heart-filled' : 'heart'}}"
+            color="{{item.favorite ? '#be8066' : '#9ba58e'}}"
+            size="38rpx" /></view
+      ></view>
+    </view>
+    <view wx:if="{{!recipes.length}}" class="empty"
+      ><t-icon name="search" size="64rpx" /><text>还没有符合条件的菜谱</text
+      ><text class="caption">试试其他食材，或添加自己的拿手菜。</text></view
+    >
+    <text class="page-note"
+      >示例克重是参考配方，并非旧网页计数单位的换算。</text
+    >
+  </block>
+</view>

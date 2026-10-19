@@ -1,0 +1,68 @@
+.detail-hero {
+  padding: 40rpx 30rpx;
+  border-radius: 22rpx;
+  background: #edf1e3;
+  margin-bottom: 24rpx;
+}
+.detail-name {
+  display: block;
+  font-size: 46rpx;
+  font-weight: 600;
+  color: #3a5437;
+  margin: 20rpx 0;
+}
+.meta {
+  display: flex;
+  gap: 24rpx;
+  font-size: 24rpx;
+  color: #7f9070;
+  flex-wrap: wrap;
+}
+.ingredient {
+  display: flex;
+  justify-content: space-between;
+  gap: 20rpx;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #edf0e7;
+  font-size: 28rpx;
+}
+.ingredient > text {
+  white-space: nowrap;
+  color: #7d8d6e;
+}
+.pending {
+  display: block;
+  font-size: 20rpx;
+  color: #ad7a35;
+  margin-top: 8rpx;
+}
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: 20rpx;
+  margin-top: 30rpx;
+  font-size: 28rpx;
+  line-height: 1.9;
+}
+.step-number {
+  flex-shrink: 0;
+  width: 44rpx;
+  height: 44rpx;
+  line-height: 44rpx;
+  text-align: center;
+  background: #edf2e3;
+  border-radius: 50%;
+  color: #789166;
+  font-size: 24rpx;
+}
+.plan-form {
+  margin-top: 24rpx;
+}
+.plan-form .caption {
+  display: block;
+  margin: 24rpx 0;
+}
+.delete-action {
+  text-align: center;
+  margin-top: 28rpx;
+}

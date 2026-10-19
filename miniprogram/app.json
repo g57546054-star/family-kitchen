@@ -1,0 +1,41 @@
+{
+  "pages": [
+    "pages/recipes/index",
+    "pages/detail/index",
+    "pages/edit/index",
+    "pages/week/index",
+    "pages/shopping/index",
+    "pages/backup/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "家常 · 家庭厨房",
+    "navigationBarBackgroundColor": "#f4f6ee",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f8faf5"
+  },
+  "tabBar": {
+    "color": "#7c8873",
+    "selectedColor": "#315c45",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      { "pagePath": "pages/recipes/index", "text": "菜谱" },
+      { "pagePath": "pages/week/index", "text": "每周点菜" },
+      { "pagePath": "pages/shopping/index", "text": "采购清单" },
+      { "pagePath": "pages/backup/index", "text": "备份迁移" }
+    ]
+  },
+  "usingComponents": {
+    "t-button": "tdesign-miniprogram/button/button",
+    "t-icon": "tdesign-miniprogram/icon/icon",
+    "t-tag": "tdesign-miniprogram/tag/tag",
+    "t-search": "tdesign-miniprogram/search/search",
+    "t-input": "tdesign-miniprogram/input/input",
+    "t-textarea": "tdesign-miniprogram/textarea/textarea",
+    "t-checkbox": "tdesign-miniprogram/checkbox/checkbox",
+    "t-popup": "tdesign-miniprogram/popup/popup"
+  },
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents",
+  "sitemapLocation": "sitemap.json"
+}

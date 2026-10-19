@@ -1,0 +1,79 @@
+<view class="page">
+  <view class="heading"
+    ><view
+      ><text class="title">采购清单</text
+      ><text class="caption">按用餐人数汇总，准备一周好味道。</text></view
+    ><t-icon name="cart" size="48rpx" color="#7f956a"
+  /></view>
+  <view class="week-navigation"
+    ><t-button
+      size="small"
+      variant="text"
+      icon="chevron-left"
+      bind:tap="previous"
+      disabled="{{offset === -520}}" /><text>{{label}}</text
+    ><t-button
+      size="small"
+      variant="text"
+      icon="chevron-right"
+      bind:tap="next"
+      disabled="{{offset === 520}}"
+  /></view>
+  <view wx:if="{{error}}" class="warning">{{error}}</view>
+  <block wx:elif="{{total}}">
+    <view class="shopping-progress"
+      ><text
+        >已备齐 <text class="progress-number">{{completed}}</text> / {{total}}
+        种</text
+      ><t-button
+        size="small"
+        variant="text"
+        disabled="{{!completed}}"
+        bind:tap="clear"
+        >取消勾选</t-button
+      ></view
+    >
+    <view class="card shopping-card"
+      ><view class="list-heading">重量清单 · 克</view
+      ><text wx:if="{{!items.length}}" class="empty-line"
+        >当前全部食材需先核对原单位。</text
+      ><view wx:for="{{items}}" wx:key="key" class="shopping-row"
+        ><t-checkbox
+          checked="{{item.checked}}"
+          label="{{item.name}}"
+          content="{{item.amountText}} {{item.unit}}"
+          icon="rectangle"
+          data-key="{{item.key}}"
+          bind:change="toggle" /></view
+    ></view>
+    <view wx:if="{{pendingItems.length}}" class="card shopping-card"
+      ><view class="list-heading pending-heading">原单位清单 · 待称重核对</view
+      ><view class="notice"
+        >以下记录未换算成克，请按原单位采购，或在私人菜谱里称重核对。</view
+      ><view wx:for="{{pendingItems}}" wx:key="key" class="shopping-row"
+        ><t-checkbox
+          checked="{{item.checked}}"
+          label="{{item.name}}"
+          content="{{item.amountText}} {{item.unit}} · 待核对"
+          icon="rectangle"
+          data-key="{{item.key}}"
+          bind:change="toggle" /></view
+    ></view>
+    <view class="actions"
+      ><t-button theme="primary" block icon="file-copy" bind:tap="copy"
+        >复制采购清单</t-button
+      ><t-button variant="outline" theme="primary" bind:tap="week"
+        >调整菜单</t-button
+      ></view
+    >
+  </block>
+  <view wx:else class="empty"
+    ><t-icon name="cart" size="76rpx" color="#8ca276" /><text
+      >一周的美味，从点菜开始</text
+    ><text class="caption">安排菜单后，这里会自动汇总食材。</text
+    ><t-button theme="primary" bind:tap="week">去点菜</t-button></view
+  >
+  <text class="page-note"
+    >仅合并同名同维度的食材。千克可换算为克；个、颗、毫升等不会自动变成克。</text
+  >
+</view>

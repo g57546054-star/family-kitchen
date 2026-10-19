@@ -1,0 +1,99 @@
+<view class="page">
+  <view class="heading"
+    ><view
+      ><text class="title">备份与迁移</text
+      ><text class="caption">{{stats || '保护你的每一份家常味'}}</text></view
+    ><t-icon name="file-safety" size="48rpx" color="#7f956a"
+  /></view>
+  <view wx:if="{{error}}" class="warning">{{error}}</view>
+  <view class="card padded"
+    ><text class="section-title">导出当前小程序数据</text
+    ><text class="description"
+      >包含私人菜谱、收藏、菜单和采购勾选。仅保存在此设备，换手机或清除小程序数据前请先备份。</text
+    ><t-button block theme="primary" icon="download" bind:tap="exportNative"
+      >导出 JSON 文件</t-button
+    ><view class="backup-actions"
+      ><t-button theme="primary" variant="text" bind:tap="copyNative"
+        >复制备份JSON</t-button
+      ><t-button variant="text" bind:tap="exportRaw"
+        >导出原始数据</t-button
+      ></view
+    ><text class="caption"
+      >损坏数据也可尝试“导出原始数据”。迁移原文件请在下方另行导出，不包含在此份当前数据备份中。</text
+    ></view
+  >
+  <view class="card padded"
+    ><text class="section-title">从旧网页迁移 / 恢复备份</text
+    ><view class="instruction"
+      ><text>1. 在原来使用的浏览器打开网页，点击侧栏“导出备份”。</text
+      ><text
+        >2. 把 JSON
+        文件发送到微信文件传输助手，再从聊天中选择文件；也可以粘贴JSON。</text
+      ><text>3. 先预览，核对菜谱数和待核对单位，再确认导入。</text></view
+    ><t-button
+      block
+      theme="primary"
+      variant="outline"
+      icon="folder-open"
+      bind:tap="chooseFile"
+      >选择聊天中的 JSON 文件</t-button
+    ><text wx:if="{{filename}}" class="filename">已选：{{filename}}</text
+    ><t-textarea
+      value="{{raw}}"
+      maxlength="300000"
+      placeholder="也可以在这里粘贴备份JSON（最多1MB）"
+      bind:change="input"
+    /><t-button block variant="outline" theme="primary" bind:tap="preview"
+      >预览备份</t-button
+    >
+    <view wx:if="{{preview}}" class="preview"
+      ><text class="section-title"
+        >{{preview.kind === 'web' ? '网页备份 · 合并迁移' : '小程序备份 ·
+        完整恢复'}}</text
+      ><text
+        >{{preview.recipeCount}} 道菜谱 · {{preview.mealCount}} 个点菜记录</text
+      ><text>有 {{preview.pending}} 项食材保留原单位，待称重核对</text
+      ><text class="caption"
+        >预览不会写入数据。网页旧勾选保留在原备份中，新清单需重新核对。完整恢复会替换当前数据。</text
+      ><t-button block theme="primary" bind:tap="importConfirmed"
+        >{{preview.kind === 'web' ? '确认迁移并自动备份' :
+        '确认恢复并备份当前数据'}}</t-button
+      ></view
+    >
+  </view>
+  <view class="card padded"
+    ><text class="section-title">自动保留的原始备份</text
+    ><text class="description"
+      >每次迁移前自动保存原网页 JSON
+      和导入前数据。原文件内容不改写，可单独发送或复制留存。</text
+    ><text wx:if="{{!backups.length}}" class="caption"
+      >暂无迁移或恢复记录。</text
+    ><view wx:for="{{backups}}" wx:key="key" class="backup-row"
+      ><text>{{item.filename}}</text
+      ><text class="caption">{{item.createdAt}} · {{item.kind}}</text
+      ><view class="backup-actions"
+        ><t-button
+          size="small"
+          theme="primary"
+          variant="outline"
+          data-key="{{item.key}}"
+          bind:tap="exportOriginal"
+          >导出原文件</t-button
+        ><t-button
+          size="small"
+          variant="text"
+          data-key="{{item.key}}"
+          bind:tap="copyOriginal"
+          >复制内容</t-button
+        ></view
+      ></view
+    ></view
+  >
+  <view class="notice"
+    ><t-icon name="home" size="32rpx" /> 家庭共享接口已预留，阶段 2A
+    尚未启用。无登录、云环境或付费资源。</view
+  >
+  <text class="page-note"
+    >备份含私人菜谱，请仅发送到你信任的位置。网页与小程序的本地数据不会自动同步。</text
+  >
+</view>

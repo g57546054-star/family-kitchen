@@ -1,0 +1,81 @@
+<view class="page">
+  <view wx:if="{{error}}" class="warning">{{error}}</view>
+  <block wx:elif="{{recipe}}">
+    <view class="detail-hero"
+      ><t-tag theme="success" variant="light">{{recipe.category}}</t-tag
+      ><text class="detail-name">{{recipe.name}}</text
+      ><view class="meta"
+        ><text>{{recipe.minutes}} 分钟</text
+        ><text>基础 {{recipe.servings}} 人份</text
+        ><text
+          >{{recipe.origin === 'builtin' ? '示例参考配方' : '私人菜谱'}}</text
+        ></view
+      ></view
+    >
+    <view class="actions"
+      ><t-button
+        theme="primary"
+        variant="outline"
+        icon="{{recipe.favorite ? 'heart-filled' : 'heart'}}"
+        bind:tap="favorite"
+        >{{recipe.favorite ? '已收藏' : '收藏'}}</t-button
+      ><t-button theme="primary" variant="outline" icon="edit" bind:tap="edit"
+        >{{recipe.origin === 'builtin' ? '另存私人菜谱' : '编辑菜谱'}}</t-button
+      ></view
+    >
+    <view class="notice"
+      >{{recipe.weightNote || '食材用量按基础人数记录。'}}</view
+    >
+    <view wx:if="{{recipe.pendingCount}}" class="warning"
+      >有 {{recipe.pendingCount}}
+      项原单位尚待核对。采购清单按原单位单独列出，不会等同于克。</view
+    >
+    <view class="card padded"
+      ><text class="section-title">所需食材</text
+      ><view wx:for="{{recipe.ingredients}}" wx:key="rowKey" class="ingredient"
+        ><view
+          ><text>{{item.name}}</text
+          ><text wx:if="{{item.needsReview}}" class="pending"
+            >待称重核对</text
+          ></view
+        ><text>{{item.amountText}} {{item.unit}}</text></view
+      ></view
+    >
+    <view class="card padded"
+      ><text class="section-title">详细做法</text
+      ><view wx:for="{{recipe.stepRows}}" wx:key="key" class="step"
+        ><text class="step-number">{{item.number}}</text
+        ><text>{{item.text}}</text></view
+      ></view
+    >
+    <t-button theme="primary" block icon="calendar" bind:tap="togglePlan"
+      >{{showPlan ? '收起点菜安排' : '加入每周菜单'}}</t-button
+    >
+    <view wx:if="{{showPlan}}" class="card padded plan-form"
+      ><text class="section-title">安排一餐</text
+      ><picker mode="date" value="{{planDate}}" bindchange="date"
+        ><view class="picker-field"
+          ><text>哪一天</text><text>{{planDate}} ›</text></view
+        ></picker
+      ><picker range="{{slots}}" value="{{slotIndex}}" bindchange="slot"
+        ><view class="picker-field"
+          ><text>哪一餐</text><text>{{slots[slotIndex]}} ›</text></view
+        ></picker
+      ><t-input
+        label="用餐人数"
+        type="number"
+        value="{{planServings}}"
+        bind:change="servings"
+      /><text class="caption"
+        >同一餐重复添加会合并人数，最多100人。食材随人数自动换算。</text
+      ><t-button theme="primary" block bind:tap="savePlan"
+        >确认加入菜单</t-button
+      ></view
+    >
+    <view wx:if="{{recipe.origin !== 'builtin'}}" class="delete-action"
+      ><t-button theme="danger" variant="text" bind:tap="remove"
+        >删除私人菜谱</t-button
+      ></view
+    >
+  </block>
+</view>
