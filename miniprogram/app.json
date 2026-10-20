@@ -5,7 +5,8 @@
     "pages/edit/index",
     "pages/week/index",
     "pages/shopping/index",
-    "pages/backup/index"
+    "pages/backup/index",
+    "pages/family/index"
   ],
   "window": {
     "navigationBarTitleText": "家常 · 家庭厨房",
@@ -19,10 +20,26 @@
     "backgroundColor": "#ffffff",
     "borderStyle": "white",
     "list": [
-      { "pagePath": "pages/recipes/index", "text": "菜谱" },
-      { "pagePath": "pages/week/index", "text": "每周点菜" },
-      { "pagePath": "pages/shopping/index", "text": "采购清单" },
-      { "pagePath": "pages/backup/index", "text": "备份迁移" }
+      {
+        "pagePath": "pages/recipes/index",
+        "text": "菜谱"
+      },
+      {
+        "pagePath": "pages/week/index",
+        "text": "每周点菜"
+      },
+      {
+        "pagePath": "pages/shopping/index",
+        "text": "采购清单"
+      },
+      {
+        "pagePath": "pages/backup/index",
+        "text": "备份迁移"
+      },
+      {
+        "pagePath": "pages/family/index",
+        "text": "我的家庭"
+      }
     ]
   },
   "usingComponents": {

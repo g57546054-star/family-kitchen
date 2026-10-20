@@ -1,4 +1,4 @@
-# 家常厨房 · 微信原生小程序（第二阶段 A）
+# 家常厨房 · 微信原生小程序（第二阶段 B）
 
 这是独立的 **JavaScript + WXML + WXSS + JSON 原生小程序**，不是网页容器，不使用 React、Vite、WebView 或跨端框架。现有网页的 `src/`、数据、依赖和发布工作流保留不变。
 
@@ -13,6 +13,14 @@
 - UI 优先采用 TDesign MiniProgram 1.17.0：搜索、按钮、输入框、标签、复选框、图标、文本域和弹层。
 - 12 道全克重参考菜谱：番茄炒蛋、西兰花炒虾仁、土豆炖牛肉、蒜蓉生菜、菌菇豆腐汤、缤纷蛋炒饭、土豆焖鸡、清蒸鲈鱼、家常麻婆豆腐、青椒土豆丝、南瓜小米粥、玉米排骨汤。
 
+## 可选家庭共享
+
+默认仍使用本地模式。新增「我的家庭」页：主动微信身份登录、创建家庭、生成/撤销30分钟一次性邀请码、加入、成员管理与退出、手动刷新、同步错误提示。本阶段每个微信账号只能属于一个家庭，每个家庭最多20人；管理员保留管理责任，暂不支持管理员退出、转让或家庭解散。
+
+共享内容为家庭菜谱、收藏、每周点菜、人数及采购勾选，成员均可编辑。小程序界面中的“私人/私房菜谱”在家庭模式下是家庭共用配方，不是仅创建者可见。管理员专有操作为邀请、撤销、移除成员和首次迁移。实际身份只由云函数 `cloud.getWXContext()` 提供，客户端不传 OPENID。
+
+**手动部署与安全配置的完整步骤见 [CloudBase 部署说明](docs/CLOUDBASE.md)**。本 PR 未连接所提供的环境、创建集合或部署函数；不需要 AppSecret/API Key。未部署时仍可完整使用本地功能，点击家庭连接会提示服务不可用。
+
 ## 微信开发者工具导入
 
 1. 安装稳定版**微信开发者工具**，建议选择最新稳定基础库（本项目配置为 `latest`）。Node.js 建议 22+，本次测试使用 24。
@@ -26,10 +34,10 @@
    第一条供现有网页及网页数据对照测试使用；小程序运行依赖仅来自 `miniprogram/package.json`。若 npm 默认缓存无写权限，可以在命令后加 `--cache /tmp/family-kitchen-npm-cache`（本云环境适用）。Windows 可使用自己有写权限的缓存目录。
 
 3. 在开发者工具选择**导入项目**，目录选仓库根目录 `family-kitchen`，不要选 `src/`，也不要将它作为小游戏。工具会读取真实的根目录 `project.config.json`，其中 `compileType` 为 `miniprogram`、`miniprogramRoot` 为 `miniprogram/`。
-4. 仓库中 `appid: "touristappid"` 是微信工具支持的游客占位值，并非伪造的生产 AppID。可使用工具提供的测试号或填自己的合法小程序 AppID。游客模式可能限制部分功能；**真机预览、分享、上传审核必须使用你自己的有效 AppID 和对应权限**。AppID 是公开标识，AppSecret、上传私钥等不需要填写到仓库。
+4. 仓库已设置正式公开 AppID `wxb104c5308c2ebb48`，`cloudfunctionRoot` 为 `cloudfunctions/`。开发者需有该 AppID 的项目权限；请勿换成游客号后测试家庭登录。AppID 和环境 ID 均为公开标识，AppSecret/API Key/上传私钥不得填写到仓库。
 5. 点击**工具 → 构建 npm**。配置已提供 `packNpmManually` 和 `packNpmRelationList`，读取 `miniprogram/package.json`，生成 `miniprogram/miniprogram_npm/tdesign-miniprogram/`。该生成目录和 `node_modules` 不提交。
 6. 点击**编译**。若提示找不到 `tdesign-miniprogram/button/button`，先确认第 2 步安装成功、第 5 步已构建 npm，再重试。不要将 npm 包源码手工复制到业务代码中。
-7. 按下述验收清单在模拟器测试，再使用真实 AppID 做真机预览。本阶段无需配置请求域名、登录服务、云开发环境或任何密钥。
+7. 按下述验收清单在模拟器测试，再使用真实 AppID 做真机预览。本地模式不需云服务。家庭共享须先按 [CloudBase 说明](docs/CLOUDBASE.md) 手动关联已存在的环境并部署；无需 HTTP 请求域名或任何密钥。
 
 > 本环境没有微信开发者工具/微信官方编译器。上述配置已通过文件、组件资源和事件绑定静态检查，但“构建 npm”、微信官方编译、基础库兼容性、游客模式行为、真机样式与文件发送尚待在工具中确认。
 
@@ -40,6 +48,8 @@
 ```bash
 npm run check --prefix miniprogram
 npm test --prefix miniprogram
+npm ci --prefix cloudfunctions/family --ignore-scripts
+npm test --prefix cloudfunctions/family
 PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:layout --prefix miniprogram
 npm run build
 PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm test
@@ -49,7 +59,7 @@ PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm test
 
 `test:layout` 使用根项目的 Playwright/Chromium，读取实际统计区域 WXML/WXSS，将原生标签和 rpx 适配为浏览器 CSS 模型，检查小屏和放大文字时的断行/溢出；它不验证微信组件实际渲染。CI 会安装 Chromium 并运行此项。`check` 还会解析模板表达式，拒绝被换行截断的字符串，避免 XML 结构检查漏过此类错误。
 
-`check` 校验真实项目配置、六页四件套、TDesign 资源路径、WXML XML 结构及所有页面事件处理函数；它不是微信官方编译器。`test` 使用 Node 内置测试运行器，覆盖真实业务函数、微信存储适配器与页面控制器（模拟 `wx`/`Page`），并从**未改动的 `src/data.ts`** 编译原始函数，做菜单/采购/日期逻辑对照。CI 对 PR 运行这些检查与旧网页构建，不上传、发布或创建云环境。
+`check` 校验真实项目配置、七页四件套、TDesign 资源路径、WXML XML 结构及所有页面事件处理函数；它不是微信官方编译器。`test` 使用 Node 内置测试运行器，覆盖真实业务函数、微信存储适配器与页面控制器（模拟 `wx`/`Page`），并从**未改动的 `src/data.ts`** 编译原始函数，做菜单/采购/日期逻辑对照。CI 对 PR 运行这些检查与旧网页构建，不上传、发布或创建云环境。
 
 具体执行结果与未验证项见 [测试记录](docs/TESTING.md)。
 
@@ -64,19 +74,32 @@ PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm test
 
 ## 数据和迁移
 
-微信本地状态键为 `family-kitchen:mini:v2`，与网页 `family-kitchen:v1` 隔离。浏览器与微信沙盒互不可读，不会自动跨设备同步；本阶段没有用户系统或家庭云存储。
+微信本地状态键为 `family-kitchen:mini:v2`，与网页 `family-kitchen:v1` 隔离。浏览器与微信沙盒互不可读，不会自动跨设备同步；家庭共享使用另一份云端快照，保留该本地键不变；每次应用重启默认回到本地模式，需主动连接、预览并切换。
 
 详细步骤、备份保留方式、恢复及失败处理见 [旧网页数据迁移说明](docs/MIGRATION.md)。单份导入文件和活动状态目前各限制为 1MB，以控制 `wx.setStorageSync` 单键开销；微信总体存储配额仍可能不足，写入失败会显示错误，不显示保存成功。
 
-## CloudBase 预留接口
+## 迁移到家庭
 
-`services/family-provider.js` 提供同步能力查询 `getCapabilities()`，以及异步 `pullFamily({ familyId })`、`pushFamily({ familyId, state, expectedRevision })` 接口形状。当前能力明确为 `enabled: false`，后两者以 `FAMILY_SHARING_DISABLED` 拒绝。
+1. 在本地模式的备份页导出文件。原网页 JSON 先通过现有网页迁移流程导入本地，核对单位、菜单与勾选。
+2. 在家庭页主动登录并创建家庭；默认只含12道参考菜谱，不自动上传本地数据。
+3. 预览云端与本地统计，明确确认后保存本地备份并切换到家庭模式。备份写入失败会阻止切换。
+4. 管理员在尚未编辑且只有自己一位成员的新家庭，点击「预览并导入本地数据」。确认后先保存本地、家庭各一份原生备份，再由云函数事务导入。已有数据版本发生变化、有其他成员或已编辑的家庭一律拒绝整份覆盖。
+5. 导入成功后再生成邀请码请家人加入。家人原有本地菜谱不会自动上传。已有家庭暂不支持批量合并其他成员快照；可逐道新增私房菜谱。
+6. 家庭模式的备份页可导出家庭快照和之前保留的本地原文件。恢复备份/网页迁移要先切回本地；本地修改不会悄悄上传。内存中不长期保存家庭离线副本，撤销成员权限后再次拉取会清除共享视图。
 
-未调用 `wx.cloud.init`、`wx.cloud.callFunction`、登录或网络请求，也没有云环境 ID、云函数、付费资源或密钥。未来阶段在此边界实现鉴权、家庭成员权限、服务端版本号及冲突处理；不得用本地时间戳直接覆盖远端状态。
+数据较大时家庭快照限制为650KB（另有128KB勾选版本记录上限），低于本地1MB；超过上限先备份、精简菜单，不会自动裁剪。迁移保留“个、颗、毫升”等原单位与待核对标记。
+
+## 同步和失败恢复
+
+`services/family-provider.js` 是可选云函数传输和命令提供者；`createDisabledFamilyProvider` 仍保留供本地兼容使用。`repository.js` 继续负责原本地数据与备份。旧的任意 `transact(fn)` 在家庭模式被拒绝，页面通过明确命令调用云函数，不能上传任意整份状态覆盖家人操作。
+
+活跃列表/详情/菜单/采购/家庭页面每20秒以及重新显示时拉取版本，家庭页可手动刷新；隐藏页面停止计时，不使用实时监听。编辑表单不因拉取而覆盖输入；服务端检测旧版本后，保留表单并提示复制修改内容、重新打开。人数加减在服务端按当前值累加；菜谱编辑/删除、点菜移除和批量清勾选需要版本一致。采购按菜单版本和单项勾选版本校验，不同食材的勾选可并发合并，同项冲突需刷新后重试。
+
+请求发送前，将请求编号和命令保存到 `family-kitchen:cloud-pending:<env>:<可信uid>`。响应丢失时可在家庭页重试同一请求，重启后先主动登录再重试；服务端幂等记录阻止重复点菜。未确认请求存在时禁止新写入。保存请求记录失败时不会发出写请求。成功写入后仅刷新失败会明确显示“已保存，请刷新，不要重复提交”，不伪装成写入失败。离线时没有自动合并/后台上传队列。
 
 ## 工具中待执行的验收
 
-1. 构建 npm 后编译，四个原生 Tab 均能打开；确认 TDesign 样式与弹层正常。
+1. 构建 npm 后编译，五个原生 Tab 均能打开；确认 TDesign 样式与弹层正常。
 2. 搜索“土豆 牛肉”，查看详情；另存私人菜谱，编辑、收藏、删除，确认示例保留。
 3. 同餐点两次同一道菜，调整人数；切换到采购页验证合并、重量及勾选，关闭重开工具检查持久化。
 4. 从原浏览器导出真实 JSON；通过文件传输助手在小程序中选择文件，预览后迁移，核对原单位、菜单及收藏；分别导出原文件和当前小程序备份。
@@ -90,12 +113,14 @@ project.config.json             # 在仓库根目录，微信原生项目入口
 miniprogram/
   app.js / app.json / app.wxss  # 原生应用与全局 TDesign 注册
   data/recipes.js              # 12 道独立克重参考配方
-  pages/                       # 菜谱、详情、编辑、周菜单、采购、备份
+  pages/                       # 菜谱、详情、编辑、周菜单、采购、备份、家庭
   utils/core.js                # 迁移后的纯业务逻辑
   services/repository.js       # 微信存储与备份写入顺序
   services/migration.js        # v1 导入与 v2 备份验证
-  services/family-provider.js  # 禁用的 CloudBase 扩展边界
+  services/family-provider.js  # 默认本地、明确选择后连接的家庭命令边界
   scripts/check-project.cjs    # 结构、组件与事件静态检查
   tests/                      # Node 业务/适配/页面/对照测试
   docs/                       # 迁移说明与验证记录
 ```
+
+云函数位于 `cloudfunctions/family/`。其 `shared/` 为现有 `utils/core.js` 与12道菜谱的部署副本，字节一致测试防止计算逻辑分叉；修改原逻辑后运行 `node miniprogram/scripts/sync-cloud-domain.cjs` 更新副本。该命令只复制本地文件，不部署。

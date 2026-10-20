@@ -87,8 +87,7 @@
     ></view
   >
   <view class="notice"
-    ><t-icon name="home" size="32rpx" /> 家庭共享接口已预留，阶段 2A
-    尚未启用。无登录、云环境或付费资源。</view
+    ><t-icon name="home" size="32rpx" /> {{cloudEnabled ? "当前导出家庭快照；原始数据导出仍来自本地。恢复或网页迁移请先在家庭页切回本地。" : "当前为本地模式；在我的家庭页可主动连接共享服务。网页备份先在本地迁移，再预览上传至新家庭。"}}</view
   >
   <text class="page-note"
     >备份含私人菜谱，请仅发送到你信任的位置。网页与小程序的本地数据不会自动同步。</text

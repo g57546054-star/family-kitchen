@@ -20,7 +20,15 @@ Page({
     }
     this.setData({ showPlan: options.plan === "1" });
   },
+  onHide() {
+    ui.detachSync(this);
+  },
+  onUnload() {
+    ui.detachSync(this);
+  },
   onShow() {
+    ui.detachSync(this);
+    ui.attachSync(this);
     this.refresh();
   },
   refresh() {
@@ -56,9 +64,17 @@ Page({
     }
   },
   favorite() {
-    ui.attempt(() => {
-      ui.repository().transact((s) => core.toggleFavorite(s, this.recipeId));
-      this.refresh();
+    return ui.attempt(() => {
+      return ui.command(
+        "recipe.favorite",
+        {
+          recipeId: this.recipeId,
+          favorite: !this.data.recipe.favorite,
+          expectedVersion: ui.version(),
+        },
+        (s) => core.toggleFavorite(s, this.recipeId),
+        () => this.refresh(),
+      );
     });
   },
   edit() {
@@ -71,8 +87,12 @@ Page({
       "删除私人菜谱",
       "这道菜会从所有菜单中移除，采购勾选将重置。操作不可撤销。",
       () => {
-        ui.repository().transact((s) => core.deleteRecipe(s, this.recipeId));
-        wx.navigateBack();
+        return ui.command(
+          "recipe.delete",
+          { recipeId: this.recipeId, expectedVersion: ui.version() },
+          (s) => core.deleteRecipe(s, this.recipeId),
+          () => wx.navigateBack(),
+        );
       },
     );
   },
@@ -89,19 +109,30 @@ Page({
     this.setData({ planServings: ui.value(event) });
   },
   savePlan() {
-    ui.attempt(() => {
-      ui.repository().transact((s) =>
-        core.addMeal(
-          s,
-          this.data.planDate,
-          core.SLOTS[this.data.slotIndex],
-          this.recipeId,
-          Number(this.data.planServings),
-        ),
+    return ui.attempt(() => {
+      const payload = {
+        date: this.data.planDate,
+        slot: core.SLOTS[this.data.slotIndex],
+        recipeId: this.recipeId,
+        servings: Number(this.data.planServings),
+      };
+      return ui.command(
+        "plan.add",
+        payload,
+        (s) =>
+          core.addMeal(
+            s,
+            payload.date,
+            payload.slot,
+            payload.recipeId,
+            payload.servings,
+          ),
+        () => {
+          getApp().selectedWeekDate = this.data.planDate;
+          ui.toast("已加入菜单，清单已更新");
+          wx.switchTab({ url: "/pages/week/index" });
+        },
       );
-      getApp().selectedWeekDate = this.data.planDate;
-      ui.toast("已加入菜单，清单已更新");
-      wx.switchTab({ url: "/pages/week/index" });
     });
   },
   onShareAppMessage() {

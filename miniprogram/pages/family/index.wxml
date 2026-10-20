@@ -1,0 +1,176 @@
+<view class="page">
+  <view class="heading"
+    ><view
+      ><text class="title">一起，好好吃饭</text
+      ><text class="caption"
+        >家庭厨房 · {{mode === 'cloud' ? '家庭共享' : '本地模式'}}</text
+      ></view
+    ><t-icon name="home" size="32" color="#315c45"
+  /></view>
+  <view class="notice"
+    >{{mode === 'cloud' ?
+    '菜谱、收藏、菜单、人数和采购勾选与家人共享。每20秒及返回页面时刷新。' :
+    '本地功能始终可用。连接家庭前，请先导出备份；不会自动上传或覆盖数据。'}}</view
+  >
+  <view wx:if="{{error}}" class="warning">{{error}}</view>
+  <view wx:if="{{pending}}" class="warning"
+    >上次操作结果未确认。请重试同一请求，避免重复提交。<t-button
+      bind:tap="retry"
+      disabled="{{busy}}"
+      theme="primary"
+      >重试上次操作</t-button
+    ></view
+  >
+  <view class="card padded"
+    ><text class="section-title">我的本地数据</text
+    ><text class="caption">{{localPreview}}</text
+    ><t-button bind:tap="backup" variant="outline" block
+      >备份与网页迁移</t-button
+    ></view
+  >
+  <view wx:if="{{!connected}}" class="card padded"
+    ><text class="section-title">与家人分享餐桌</text
+    ><text class="caption">使用微信云函数确认身份，无需填写账号密码。</text
+    ><t-button theme="primary" block bind:tap="login" disabled="{{busy}}"
+      >微信身份登录</t-button
+    ></view
+  >
+  <view wx:if="{{connected ? mode === 'local' : false}}" class="card padded">
+    <text class="section-title">创建或加入</text>
+    <t-input
+      label="家庭昵称"
+      value="{{displayName}}"
+      data-field="displayName"
+      maxlength="24"
+      bind:change="field"
+      placeholder="家人看到的名字"
+    />
+    <t-input
+      label="家庭名称"
+      value="{{name}}"
+      data-field="name"
+      maxlength="40"
+      bind:change="field"
+      placeholder="例如：我们的厨房"
+    />
+    <t-button
+      bind:tap="create"
+      theme="primary"
+      block
+      disabled="{{busy || pending}}"
+      >创建新家庭</t-button
+    >
+    <t-input
+      label="邀请码"
+      value="{{code}}"
+      data-field="code"
+      maxlength="12"
+      bind:change="field"
+      placeholder="输入12位短期邀请码"
+    />
+    <t-button
+      bind:tap="join"
+      variant="outline"
+      block
+      disabled="{{busy || pending}}"
+      >用邀请码加入</t-button
+    >
+    <t-button bind:tap="sync" variant="text" block disabled="{{busy}}"
+      >预览已加入的家庭</t-button
+    >
+  </view>
+  <view wx:if="{{canActivate ? mode === 'local' : false}}" class="card padded"
+    ><text class="section-title">切换前预览</text
+    ><text class="caption">{{previewText}}</text
+    ><t-button
+      bind:tap="activate"
+      theme="primary"
+      block
+      disabled="{{busy || pending}}"
+      >确认、备份并切换</t-button
+    ></view
+  >
+  <view wx:if="{{mode === 'cloud'}}">
+    <view class="card padded"
+      ><text class="section-title">{{familyName}}</text
+      ><text class="caption"
+        >{{role === 'admin' ? '家庭管理员' : '家庭成员'}} · {{busy ? '正在保存…'
+        : '上次同步 ' + lastSync}}</text
+      ><view class="actions"
+        ><t-button bind:tap="sync" variant="outline" disabled="{{busy}}"
+          >立即刷新</t-button
+        ><t-button
+          bind:tap="local"
+          variant="text"
+          disabled="{{busy || pending}}"
+          >切回本地</t-button
+        ></view
+      ><t-button
+        wx:if="{{canImport}}"
+        bind:tap="importLocal"
+        theme="primary"
+        block
+        disabled="{{busy || pending}}"
+        >预览并导入本地数据</t-button
+      ></view
+    >
+    <view class="card padded"
+      ><text class="section-title">家庭成员 · {{members.length}}人</text
+      ><view wx:for="{{members}}" wx:key="uid" class="member"
+        ><view class="member-name"
+          ><text>{{item.name}}</text
+          ><text class="caption"
+            >{{item.role === 'admin' ? '管理员' : '成员'}}</text
+          ></view
+        ><t-button
+          wx:if="{{role === 'admin' ? item.role !== 'admin' : false}}"
+          size="small"
+          variant="text"
+          data-uid="{{item.uid}}"
+          bind:tap="remove"
+          disabled="{{busy || pending}}"
+          >移除</t-button
+        ></view
+      ><t-button
+        wx:if="{{role !== 'admin'}}"
+        bind:tap="leave"
+        variant="outline"
+        block
+        disabled="{{busy || pending}}"
+        >退出家庭</t-button
+      ></view
+    >
+    <view wx:if="{{role === 'admin'}}" class="card padded"
+      ><text class="section-title">邀请家人</text
+      ><text class="caption"
+        >30分钟有效、仅能使用一次，家庭最多20人。仅转发给你信任的家人。</text
+      ><t-button
+        theme="primary"
+        block
+        bind:tap="invite"
+        disabled="{{busy || pending}}"
+        >生成一次性邀请码</t-button
+      ><view wx:if="{{inviteCode}}" class="invite"
+        ><text class="invite-code" selectable="true">{{inviteCode}}</text
+        ><text class="caption">有效期至 {{inviteExpiry}}</text
+        ><t-button bind:tap="copyInvite" variant="outline" block
+          >复制邀请码</t-button
+        ></view
+      ><view wx:for="{{invites}}" wx:key="id" class="invite-row"
+        ><text class="caption">{{item.status}} · {{item.expiryText}}</text
+        ><t-button
+          wx:if="{{item.active}}"
+          bind:tap="revoke"
+          data-id="{{item.id}}"
+          size="small"
+          variant="text"
+          disabled="{{busy || pending}}"
+          >撤销</t-button
+        ></view
+      ></view
+    >
+  </view>
+  <text class="page-note"
+    >网络异常时请先处理未确认请求。切回本地后的更改不会自动上传；已有家庭数据不能用本地快照覆盖。</text
+  >
+</view>

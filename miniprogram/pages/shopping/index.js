@@ -10,7 +10,15 @@ Page({
     completed: 0,
     error: "",
   },
+  onHide() {
+    ui.detachSync(this);
+  },
+  onUnload() {
+    ui.detachSync(this);
+  },
   onShow() {
+    ui.detachSync(this);
+    ui.attachSync(this);
     if (Number.isInteger(getApp().shoppingWeekOffset)) {
       this.setData({ offset: getApp().shoppingWeekOffset });
       getApp().shoppingWeekOffset = undefined;
@@ -22,13 +30,11 @@ Page({
       const state = ui.repository().load();
       const dates = core.weekDates(this.data.offset);
       const start = core.localDate(dates[0]);
-      const items = core
-        .shoppingList(state, dates)
-        .map((item) => ({
-          ...item,
-          amountText: core.formatAmount(item.amount),
-          checked: state.checked.includes(core.checkedKey(start, item.key)),
-        }));
+      const items = core.shoppingList(state, dates).map((item) => ({
+        ...item,
+        amountText: core.formatAmount(item.amount),
+        checked: state.checked.includes(core.checkedKey(start, item.key)),
+      }));
       this.setData({
         items: items.filter((i) => !i.needsReview),
         pendingItems: items.filter((i) => i.needsReview),
@@ -54,16 +60,31 @@ Page({
     }
   },
   toggle(event) {
-    ui.attempt(() => {
-      ui.repository().transact((s) =>
-        core.toggleShopping(
-          s,
-          core.weekDates(this.data.offset),
-          event.currentTarget.dataset.key,
-          event.detail.checked === true,
-        ),
+    return ui.attempt(() => {
+      const start = core.localDate(core.weekDates(this.data.offset)[0]);
+      const key = event.currentTarget.dataset.key;
+      const provider = getApp().familyProvider;
+      const payload = {
+        start,
+        key,
+        checked: event.detail.checked === true,
+        menuVersion: provider ? provider.menuVersion() : 0,
+        checkVersion: provider
+          ? provider.checkVersion(core.checkedKey(start, key))
+          : 0,
+      };
+      return ui.command(
+        "shopping.set",
+        payload,
+        (s) =>
+          core.toggleShopping(
+            s,
+            core.weekDates(this.data.offset),
+            key,
+            payload.checked,
+          ),
+        () => this.refresh(),
       );
-      this.refresh();
     });
   },
   clear() {
@@ -71,14 +92,16 @@ Page({
       "取消本周全部勾选",
       "食材数量保持不变，只取消采购完成标记。",
       () => {
-        ui.repository().transact((s) => {
-          const prefix = `${core.localDate(core.weekDates(this.data.offset)[0])}:`;
-          return {
+        const start = core.localDate(core.weekDates(this.data.offset)[0]);
+        return ui.command(
+          "shopping.clear",
+          { start, expectedVersion: ui.version() },
+          (s) => ({
             ...s,
-            checked: s.checked.filter((k) => !k.startsWith(prefix)),
-          };
-        });
-        this.refresh();
+            checked: s.checked.filter((k) => !k.startsWith(`${start}:`)),
+          }),
+          () => this.refresh(),
+        );
       },
     );
   },

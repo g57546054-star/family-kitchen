@@ -1,4 +1,5 @@
 <view class="page">
+  <view wx:if="{{syncText}}" class="notice sync-status">{{syncText}} · 在家庭页可手动刷新</view>
   <view class="heading"
     ><view
       ><text class="title">采购清单</text
